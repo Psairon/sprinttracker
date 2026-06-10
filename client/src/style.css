@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Minimal reset (Tailwind preflight is disabled to coexist with Naive UI). */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  height: 100%;
+}
+
+/* Native <button> reset (preflight is off; Naive UI's own styles win by specificity). */
+button {
+  background-color: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: #0c111c;
+  color: #e6ebf5;
+}
+
+/* Drag & drop helpers */
+.dragging {
+  opacity: 0.45;
+}
+.drop-active {
+  outline: 2px dashed #4f7cff;
+  outline-offset: -6px;
+  background: rgba(79, 124, 255, 0.06);
+}

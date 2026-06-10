@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "monolith",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["dist/main.js"],
+      "cwd": "server",
+      "port": 3000
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node dist/main.js)",
+      "Bash(taskkill //F //IM node.exe)"
+    ]
+  }
+}
