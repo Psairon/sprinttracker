@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
   NModal,
   NButton,
@@ -64,6 +64,28 @@ const subEstimate = ref<number>(0);
 const subDeadline = ref<number | null>(null);
 const subAssignee = ref<string | null>(null);
 const adding = ref(false);
+
+// Local drafts so the title/description inputs are freely editable; we persist
+// on blur/Enter. They re-sync whenever a different task is opened.
+const titleDraft = ref('');
+const descDraft = ref('');
+watch(
+  () => props.task?.id,
+  () => {
+    titleDraft.value = props.task?.title ?? '';
+    descDraft.value = props.task?.description ?? '';
+  },
+  { immediate: true },
+);
+
+function saveTitle() {
+  const v = titleDraft.value.trim();
+  if (v && v !== props.task?.title) patchTask({ title: v });
+}
+function saveDescription() {
+  if (descDraft.value !== (props.task?.description ?? ''))
+    patchTask({ description: descDraft.value });
+}
 
 const subtasks = computed(() => props.task?.subtasks ?? []);
 
@@ -152,19 +174,20 @@ function effectiveDeadline(sub: Subtask): number {
       <div class="mb-3">
         <div class="mb-1 text-xs text-slate-400">Название</div>
         <n-input
-          :value="task.title"
+          v-model:value="titleDraft"
           placeholder="Название задачи"
-          @change="(v: string) => v.trim() && patchTask({ title: v })"
+          @blur="saveTitle"
+          @keyup.enter="saveTitle"
         />
       </div>
       <div class="mb-3">
         <div class="mb-1 text-xs text-slate-400">Описание</div>
         <n-input
-          :value="task.description || ''"
+          v-model:value="descDraft"
           type="textarea"
           :rows="2"
           placeholder="Описание задачи"
-          @change="(v: string) => patchTask({ description: v })"
+          @blur="saveDescription"
         />
       </div>
 
