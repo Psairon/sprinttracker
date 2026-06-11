@@ -62,6 +62,7 @@ const subTitle = ref('');
 const subTrack = ref<Track>('analytics');
 const subEstimate = ref<number>(0);
 const subDeadline = ref<number | null>(null);
+const subAssignee = ref<string | null>(null);
 const adding = ref(false);
 
 const subtasks = computed(() => props.task?.subtasks ?? []);
@@ -80,10 +81,12 @@ async function addSubtask() {
       track: subTrack.value,
       estimateHours: subEstimate.value || 0,
       deadlineDays: subDeadline.value || undefined,
+      assigneeId: subAssignee.value || undefined,
     });
     subTitle.value = '';
     subEstimate.value = 0;
     subDeadline.value = null;
+    subAssignee.value = null;
     emit('changed');
   } catch (e) {
     message.error(e instanceof ApiError ? e.message : 'Ошибка');
@@ -145,6 +148,26 @@ function effectiveDeadline(sub: Subtask): number {
     @update:show="emit('update:show', $event)"
   >
     <template v-if="task">
+      <!-- Editable title & description -->
+      <div class="mb-3">
+        <div class="mb-1 text-xs text-slate-400">Название</div>
+        <n-input
+          :value="task.title"
+          placeholder="Название задачи"
+          @change="(v: string) => v.trim() && patchTask({ title: v })"
+        />
+      </div>
+      <div class="mb-3">
+        <div class="mb-1 text-xs text-slate-400">Описание</div>
+        <n-input
+          :value="task.description || ''"
+          type="textarea"
+          :rows="2"
+          placeholder="Описание задачи"
+          @change="(v: string) => patchTask({ description: v })"
+        />
+      </div>
+
       <!-- Task-level controls -->
       <div class="flex flex-wrap items-end gap-3">
         <div>
@@ -182,10 +205,6 @@ function effectiveDeadline(sub: Subtask): number {
           </n-popconfirm>
         </div>
       </div>
-
-      <p v-if="task.description" class="mt-3 text-sm text-slate-400">
-        {{ task.description }}
-      </p>
 
       <div class="mt-3">
         <div class="mb-1 text-xs text-slate-400">Ссылки</div>
@@ -325,6 +344,13 @@ function effectiveDeadline(sub: Subtask): number {
             :min="1"
             placeholder="дедлайн"
             style="width: 110px"
+          />
+          <n-select
+            v-model:value="subAssignee"
+            size="small"
+            :options="assigneeOptions"
+            placeholder="исполнитель"
+            style="width: 150px"
           />
           <n-button
             size="small"

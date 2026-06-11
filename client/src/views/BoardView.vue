@@ -41,14 +41,6 @@ const team = ref<TeamMember[]>([]);
 const performance = ref<PerformanceRow[]>([]);
 const loading = ref(true);
 
-const assigneeOptions = computed(() => [
-  { label: '— не назначен', value: null as string | null },
-  ...team.value.map((m) => ({
-    label: `${m.firstName} ${m.lastName}`.trim(),
-    value: m.id,
-  })),
-]);
-
 const COLUMNS: Status[] = ['todo', 'in_progress', 'done'];
 
 // ---- Filter & sort ----
@@ -100,6 +92,16 @@ function subtaskProgress(task: Task): string {
 
 function taskPercent(task: Task): number {
   return stats.value?.taskProgress[task.id] ?? 0;
+}
+
+/** Distinct assignees across a task's subtasks (for the board card). */
+function taskAssignees(task: Task): { id: string; name: string }[] {
+  const seen = new Map<string, string>();
+  for (const s of task.subtasks) {
+    if (s.assignee)
+      seen.set(s.assignee.id, `${s.assignee.firstName} ${s.assignee.lastName}`.trim());
+  }
+  return [...seen.entries()].map(([id, name]) => ({ id, name }));
 }
 
 // ---- Track drill-down (same page, animated) ----
@@ -243,7 +245,6 @@ const showCreate = ref(false);
 const newTitle = ref('');
 const newDesc = ref('');
 const newEstimate = ref<number>(0);
-const newAssignee = ref<string | null>(null);
 const creating = ref(false);
 async function createTask() {
   if (!newTitle.value.trim()) return;
@@ -253,13 +254,11 @@ async function createTask() {
       title: newTitle.value,
       description: newDesc.value || undefined,
       estimateHours: newEstimate.value || 0,
-      assigneeId: newAssignee.value || undefined,
     });
     showCreate.value = false;
     newTitle.value = '';
     newDesc.value = '';
     newEstimate.value = 0;
-    newAssignee.value = null;
     await refresh();
   } catch (e) {
     message.error(e instanceof ApiError ? e.message : 'Ошибка');
@@ -524,6 +523,12 @@ onMounted(load);
                       >
                       <span v-if="sub.links?.length" class="shrink-0">🔗</span>
                     </div>
+                    <div
+                      v-if="sub.assignee"
+                      class="mt-1 text-xs text-slate-300"
+                    >
+                      👤 {{ sub.assignee.firstName }} {{ sub.assignee.lastName }}
+                    </div>
                   </div>
                   <div
                     v-if="col.items.length === 0"
@@ -583,7 +588,8 @@ onMounted(load);
                   }}
                 </div>
                 <div class="text-xs text-slate-500">
-                  выполнено {{ row.tasksDone }} из {{ row.tasksTotal }} задач
+                  выполнено {{ row.subtasksDone }} из
+                  {{ row.subtasksTotal }} подзадач
                 </div>
               </div>
               <div class="ml-2 shrink-0 text-right">
@@ -658,12 +664,12 @@ onMounted(load);
                     >🔗 {{ task.links.length }}</span
                   >
                   <n-tag
-                    v-if="task.assignee"
+                    v-for="a in taskAssignees(task)"
+                    :key="a.id"
                     size="small"
                     round
                     :bordered="false"
-                    >👤 {{ task.assignee.firstName }}
-                    {{ task.assignee.lastName }}</n-tag
+                    >👤 {{ a.name }}</n-tag
                   >
                   <!-- track dots -->
                   <span class="flex gap-1">
@@ -741,13 +747,6 @@ onMounted(load);
       </n-form-item>
       <n-form-item label="Оценка, часов">
         <n-input-number v-model:value="newEstimate" :min="0" class="w-full" />
-      </n-form-item>
-      <n-form-item label="Исполнитель">
-        <n-select
-          v-model:value="newAssignee"
-          :options="assigneeOptions"
-          class="w-full"
-        />
       </n-form-item>
       <template #footer>
         <div class="flex justify-end gap-2">

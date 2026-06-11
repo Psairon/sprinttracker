@@ -36,3 +36,14 @@ coverage/
 
 /node_modules
 /jspm_packages/
+
+# Nested workspaces (server/ and client/)
+**/node_modules/
+server/dist/
+client/dist/
+
+# Runtime data (generated SQLite database)
+server/data/
+
+# TypeScript build info
+*.tsbuildinfo
