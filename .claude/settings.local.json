@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(node dist/main.js)",
-      "Bash(taskkill //F //IM node.exe)"
+      "Bash(taskkill //F //IM node.exe)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(git checkout *)",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "mcp__Claude_in_Chrome__computer",
+      "mcp__Claude_in_Chrome__navigate",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" --max-time 20 https://sprinttracker-production-72cc.up.railway.app/)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" --max-time 20 https://sprinttracker-production-72cc.up.railway.app/api/projects)",
+      "Bash(git fetch *)",
+      "Bash(git commit --allow-empty -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }
