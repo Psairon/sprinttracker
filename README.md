@@ -49,8 +49,30 @@ npm run dev:client   # Vite на :5173, проксирует /api → :3000
 ```
 
 ## Переменные окружения (необязательно)
-- `PORT` — порт сервера (по умолчанию `3000`).
+- `PORT` — порт сервера (по умолчанию `3000`; Railway проставляет сам).
 - `JWT_SECRET` — секрет для подписи токенов (по умолчанию dev-значение).
+- `DATA_DIR` — каталог для файла SQLite (по умолчанию `server/data`).
+
+## Деплой на Railway
+
+Репозиторий уже сконфигурирован (`railway.json` + корневые скрипты). Шаги:
+
+1. **New Project → Deploy from GitHub repo**, выбрать этот репозиторий и ветку
+   `production`. Railway возьмёт сборщик Nixpacks и прочитает `railway.json`:
+   - install: `npm install` (корневой `postinstall` ставит зависимости `server/`
+     и `client/`);
+   - build: `npm run build` (собирает фронт, затем бэкенд);
+   - start: `npm run start`; healthcheck — `GET /`.
+2. **Volume для базы (обязательно):** файловая система Railway эфемерна, поэтому
+   без тома SQLite будет обнуляться при каждом деплое. В сервисе → **Variables →
+   New Volume**, mount path, например, `/data`. Затем добавить переменную
+   `DATA_DIR=/data`.
+3. **Variables:** задать `JWT_SECRET` (длинная случайная строка). `PORT` трогать
+   не нужно — Railway передаёт его сам, сервер слушает `0.0.0.0:$PORT`.
+4. **Generate Domain** в настройках сервиса — приложение (и API под `/api`)
+   доступно по одному origin.
+
+Шаблон переменных — в [`.env.example`](.env.example).
 
 ## API (кратко)
 

@@ -19,7 +19,9 @@ import { SubtasksModule } from './subtasks/subtasks.module';
 import { StatsModule } from './stats/stats.module';
 import { TeamModule } from './team/team.module';
 
-const dataDir = join(__dirname, '..', 'data');
+// DATA_DIR lets the SQLite file live on a persistent volume (e.g. Railway
+// volume mounted at /data). Defaults to server/data for local runs.
+const dataDir = process.env.DATA_DIR || join(__dirname, '..', 'data');
 if (!existsSync(dataDir)) {
   mkdirSync(dataDir, { recursive: true });
 }
